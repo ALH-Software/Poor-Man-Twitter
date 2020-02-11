@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Poor Man's Twitter using VUE and Django</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Poor Man's Twitter using VUE and Django"/>
+    <meta name="keywords" content="vuejs, django, restapi" />
+    <!-- bootstap -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <!-- boostrap css -->
+  </head>
+  <body>
+    <div id="starting">
+      <div class="container">
+         <br/>
+         <h1>Poor Man's Twitter using VUE and Django</h1>
+         <br/>
+         <form v-on:submit.prevent="addTweet()">
+            <div class="row">
+               <div class="col-md-3">
+                  <div class="form-group">
+                     <label for="tweet_name">The Name</label>
+                     <input
+                        type="text"
+                        class="form-control"
+                        id="tweet_name"
+                        placeholder="Enter The Name"
+                        v-model="newTweet.tweet_name"
+                        required="required" 
+                        maxlength="25"/>
+                  </div>
+               </div>
+               <div class="col-md-5">
+                  <div class="form-group">
+                     <label for="tweet_body">The Tweet </label>
+                     <textarea
+                        class="form-control"
+                        id="tweet_body"
+                        placeholder="Enter Tweet Body"
+                        v-model="newTweet.tweet_body"
+                        required="required"
+                        rows="3"
+                        maxlength="50"></textarea>
+                  </div>
+               </div>
+               <div class="col-md-2">
+                  <button type="submit" class="btn btn-primary" style="margin-top: 50px;">Save tweet</button>
+               </div>
+            </div>
+         </form>
+         <hr/>
+         <div class="row">
+            <div class="col-md-8">
+               <h3>
+               List of Tweets</h1>
+               <table class="table" id="tweetsTable">
+                  <thead>
+                     <tr>
+                        <th scope="col">Time</th>
+                        <th scope="col">Tweet</th>
+                        <th scope="col">Name</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+    </div>
+    <!-- bootrtap js files -->
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- vue.js files -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.5"></script>
+    <script type="text/javascript">
+      new Vue({
+        el: "#starting",
+        delimiters: ['${','}'],
+        data: {
+          tweets: [],
+          currentTweet: {},
+          message: null,
+          newTweet: { tweet_name: null, tweet_body: null }
+        },
+        mounted: function() {
+          this.getTweets();
+        },
+        methods: {
+          getTweets: function() {
+            $('#tweetsTable > tbody').empty();
+
+            this.$http
+              .get(`/api/tweet/`)
+              .then(response => {
+                this.tweets = response.data;
+                $.each( this.tweets, function( index, value ){
+                  console.log(value.tweet_name);
+                  var dt = new Date(value.tweet_crated_at);
+                  $('#tweetsTable > tbody:last-child').append('<tr><td>'+dt.toLocaleString()+'</td><td>'+value.tweet_name+'</td><td>'+value.tweet_body+'</td>');
+                });
+              })
+              .catch(err => {
+                console.log(err);
+              });
+          },
+          addTweet: function() {
+            this.$http
+              .post(`/api/tweet/`, this.newTweet)
+              .then(response => {
+                this.getTweets();
+              })
+              .catch(err => {
+                console.log(err);
+              });
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
